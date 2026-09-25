@@ -72,7 +72,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
   res.status(201).json({
     message: 'تم إرسال رمز التحقق إلى رقم هاتفك',
     phone,
-    ...(env.OTP_DEV_MODE ? { devCode: code } : {}),
+    ...((env.OTP_DEV_MODE || env.OTP_SHOW_CODE) ? { devCode: code } : {}),
   });
 });
 
@@ -84,7 +84,7 @@ export const resendOtp = asyncHandler(async (req: Request, res: Response) => {
   const last = await Otp.findOne({ phone, purpose }).sort({ createdAt: -1 });
   if (!last) return res.json(GENERIC_OTP_RESPONSE);
   const code = await issueOtp(phone, purpose, last.payload as Record<string, unknown>);
-  res.json({ ...GENERIC_OTP_RESPONSE, ...(env.OTP_DEV_MODE ? { devCode: code } : {}) });
+  res.json({ ...GENERIC_OTP_RESPONSE, ...((env.OTP_DEV_MODE || env.OTP_SHOW_CODE) ? { devCode: code } : {}) });
 });
 
 export const verifyOtp = asyncHandler(async (req: Request, res: Response) => {
@@ -239,7 +239,7 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
   // Never reveal whether the phone exists.
   if (!user) return res.json(GENERIC_OTP_RESPONSE);
   const code = await issueOtp(phone, 'reset_password');
-  res.json({ ...GENERIC_OTP_RESPONSE, ...(env.OTP_DEV_MODE ? { devCode: code } : {}) });
+  res.json({ ...GENERIC_OTP_RESPONSE, ...((env.OTP_DEV_MODE || env.OTP_SHOW_CODE) ? { devCode: code } : {}) });
 });
 
 export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
